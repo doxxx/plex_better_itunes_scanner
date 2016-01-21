@@ -73,6 +73,7 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None):
                 album_artist=track_str(track, "Album Artist"),
                 index=track.get("Track Number", None),
                 disc=track.get("Disc Number", 1),
+                year=track.get("Year", None)
         )
 
         path = url2path(track_str(track, "Location"))
