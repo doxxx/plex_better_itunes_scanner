@@ -1,4 +1,6 @@
+import os.path
 import plistlib
+import sys
 import urllib
 import urlparse
 
@@ -13,6 +15,14 @@ def track_str(track, key):
         return track[key].encode("utf-8")
     else:
         return None
+
+
+def url2path(url):
+    parsed_url = urlparse.urlparse(url)
+    path = urllib.unquote(parsed_url.path)
+    if sys.platform == "win32":  # Windows is speshul
+        path = os.path.normpath(path[1:])  # "/C:/Path/To/File" -> "C:\Path\To\File"
+    return path
 
 
 def Scan(path, files, mediaList, subdirs, language=None, root=None):
@@ -38,16 +48,12 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None):
                 disc=track.get("Disc Number", 1),
         )
 
-        encoded_path = urlparse.urlparse(track_str(track, "Location")).path
-
-        path = urllib.unquote(encoded_path)
+        path = url2path(track_str(track, "Location"))
 
         if not path.startswith(path_prefix):
             # weird, this music file must live somewhere else so we can't access it
             continue
 
-        corrected_path = root + "/iTunes Media/" + path[len(path_prefix):]
-
-        plex_track.parts.append(corrected_path)
+        plex_track.parts.append(path)
 
         mediaList.append(plex_track)
