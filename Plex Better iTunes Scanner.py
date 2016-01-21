@@ -53,7 +53,14 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None):
 
     song_kinds = {"AAC audio file", "MPEG audio file", "Apple Lossless audio file"}
 
-    path_prefix = urllib.unquote(urlparse.urlparse(library["Music Folder"]).path)
+    # The iTunes Library.xml on Windows doesn't appear to contain the
+    # Music Folder entry, so let's assume the user selected the Music
+    # folder as the root.
+
+    if "Music Folder" in library:
+        path_prefix = url2path(library["Music Folder"])
+    else:
+        path_prefix = root
 
     for track in library["Tracks"].values():
         if "Kind" not in track or track["Kind"] not in song_kinds:
