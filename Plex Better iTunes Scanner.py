@@ -9,6 +9,9 @@ import Media
 
 Virtual = True
 
+LIB_FILENAME1 = "iTunes Library.xml"
+LIB_FILENAME2 = "iTunes Music Library.xml"
+
 
 def track_str(track, key):
     if key in track:
@@ -29,7 +32,24 @@ def Scan(path, files, mediaList, subdirs, language=None, root=None):
     if not root:
         return
 
-    library = plistlib.readPlist(root + "/iTunes Music Library.xml")
+    # It would seem that the library file is called "iTunes Library.xml" on
+    # Windows but "iTunes Music Library.xml" on OS X. Search up the folder
+    # hierarchy from 'root' until we hit the root of the filesystem or find
+    # either file.
+
+    lib_folder = root
+    while not os.path.exists(os.path.join(lib_folder, LIB_FILENAME1)) and \
+            not os.path.exists(os.path.join(lib_folder, LIB_FILENAME2)):
+        parent = os.path.dirname(lib_folder)
+        if parent == lib_folder:
+            raise Exception("Could not find iTunes library file")
+        lib_folder = parent
+
+    lib_path = os.path.join(lib_folder, LIB_FILENAME1)
+    if not os.path.exists(lib_path):
+        lib_path = os.path.join(lib_folder, LIB_FILENAME2)
+
+    library = plistlib.readPlist(lib_path)
 
     song_kinds = {"AAC audio file", "MPEG audio file", "Apple Lossless audio file"}
 
